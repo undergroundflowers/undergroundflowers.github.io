@@ -1,0 +1,129 @@
+/* ============================================================
+   Mandeep Kumar Design System — Tokens
+   Import into any surface to inherit the brand foundations.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---------- Color (OFF / default) ---------- */
+  --bg:       #ffffff;
+  --fg:       #0a0a0a;
+  --muted:    #6b6b6b;
+  --line:     rgba(10, 10, 10, 0.14);
+
+  /* ---------- Palette swatches (used by ON-state cycling) ---------- */
+  --cream:    #efe9d9;
+  --red:      #ff2d1f;
+  --blue:     #1f3bff;
+  --green:    #c8ea4a;
+  --pink:     #ff9cc8;
+  --ink:      #0a0a0a;
+  --yellow:   #fff25a;
+  --orange:   #ff5a1f;
+  --magenta:  #ff2d78;
+  --violet:   #7a00ff;
+  --emerald:  #00a859;
+
+  /* ---------- Type ---------- */
+  --font-display: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body:    "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  /* ---------- Type scale ---------- */
+  --t-mega:    clamp(120px, 22vw, 360px);  /* category words */
+  --t-hero:    clamp(44px, 7vw, 120px);    /* contact link   */
+  --t-intro:   clamp(30px, 4.6vw, 72px);   /* intro copy     */
+  --t-title:   20px;                        /* project titles */
+  --t-body:    16px;
+  --t-label:   11px;                        /* uppercase mono */
+
+  /* ---------- Spacing ---------- */
+  --pad-x:     clamp(16px, 2vw, 28px);
+  --pad-y:     clamp(14px, 1.4vw, 22px);
+  --header-h:  52px;
+  --gap-xs:    4px;
+  --gap-sm:    8px;
+  --gap-md:    16px;
+  --gap-lg:    28px;
+
+  /* ---------- Radii ---------- */
+  --radius-0:   0;
+  --radius-pill: 999px;
+
+  /* ---------- Motion ---------- */
+  --t:            380ms cubic-bezier(.2, .7, .2, 1);       /* micro   */
+  --t-panel:      900ms cubic-bezier(.76, 0, .24, 1);       /* macro   */
+  --t-slide-hover:700ms cubic-bezier(.2, .7, .2, 1);        /* hover slide */
+
+  /* ---------- Letter-spacing ---------- */
+  --tracking-label: 0.08em;
+  --tracking-tight: -0.025em;
+  --tracking-mega:  -0.045em;
+}
+
+/* ============================================================
+   Base + semantic classes
+   ============================================================ */
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.h-mega {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--t-mega);
+  line-height: 0.86;
+  letter-spacing: var(--tracking-mega);
+}
+
+.h-hero {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--t-hero);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.h-intro {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--t-intro);
+  line-height: 1.04;
+  letter-spacing: var(--tracking-tight);
+  max-width: 24ch;
+  text-wrap: pretty;
+}
+
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--t-title);
+  letter-spacing: -0.01em;
+}
+
+.t-body {
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.5;
+}
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+.hairline { border-top: 1px solid var(--line); }
+.muted    { color: var(--muted); }

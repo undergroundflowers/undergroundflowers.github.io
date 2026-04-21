@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Project — Mandeep Kumar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Dancing+Script:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #ffffff;
+    --fg: #0a0a0a;
+    --muted: #6b6b6b;
+    --accent: #0a0a0a;
+    --line: rgba(10,10,10,0.14);
+    --pad-x: clamp(16px, 2vw, 28px);
+    --pad-y: clamp(14px, 1.4vw, 22px);
+    --header-h: 52px;
+    --t: 380ms cubic-bezier(.2,.7,.2,1);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html, body{
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+    transition: background var(--t), color var(--t);
+  }
+  a{ color: inherit; text-decoration: none; }
+  body.color-on{ --bg: #ffffff; }
+
+  /* ---------------- Header ---------------- */
+  header{
+    position: fixed; inset: 0 0 auto 0; z-index: 50;
+    height: var(--header-h);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 var(--pad-x);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 16px; line-height: 20px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    background: transparent;
+    mix-blend-mode: difference;
+    color: #fff;
+  }
+  header .site-title{ justify-self: start; }
+  header nav{ justify-self: center; display:flex; gap: 14px; align-items: stretch; }
+  header nav > a{
+    position:relative;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: inherit;
+    background: transparent;
+    transition: background .18s ease, color .18s ease, border-color .18s ease;
+  }
+  header nav > a:hover,
+  header nav > a.menu-open{
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    mix-blend-mode: normal;
+    isolation: isolate;
+  }
+
+  /* Projects nav dropdown — sibling of <header>, JS-positioned */
+  .nav-menu{
+    position: fixed;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    min-width: 220px;
+    background: #0a0a0a;
+    color: #fff;
+    border: 1px solid #0a0a0a;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    z-index: 80;
+  }
+  .nav-menu[hidden]{ display: none; }
+  .nav-menu li{ list-style: none; }
+  .nav-menu a{
+    display: flex; justify-content: space-between; align-items: baseline; gap: 18px;
+    padding: 11px 16px;
+    color: #fff;
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav-menu a .num{ opacity: .5; font-size: 12px; }
+  .nav-menu a:hover,
+  .nav-menu a:focus{ background: #fff; color: #0a0a0a; outline: 0; }
+  .nav-menu a:hover .num,
+  .nav-menu a:focus .num{ opacity: .8; }
+  header .right{ justify-self: end; display:flex; align-items:center; gap: 14px; }
+
+  .toggle{
+    display:inline-flex; align-items:center; gap: 8px;
+    user-select:none; cursor:pointer;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 16px;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    line-height: 20px; text-transform: uppercase;
+    font-weight: 500;
+  }
+  .toggle .lbl{ padding: 0 5px; }
+  .toggle .lbl.off{ opacity: 1; }
+  .toggle .lbl.on{ opacity: .45; }
+  body.color-on .toggle .lbl.off{ opacity: .45; }
+  body.color-on .toggle .lbl.on{ opacity: 1; }
+  .switch{
+    position: relative; width: 35px; height: 17px;
+    border-radius: 40px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px currentColor;
+    isolation: isolate;
+    transition: background .2s;
+  }
+  .switch::after{
+    content:""; position:absolute; top:2px; left:2px;
+    width:13px; height:13px; border-radius:50%;
+    background: currentColor;
+    transition: transform .24s cubic-bezier(.6,.05,.2,1), background .2s;
+  }
+  body.color-on .switch{ background: currentColor; }
+  body.color-on .switch::after{ transform: translateX(18px); background: #fff; mix-blend-mode: difference; }
+
+  /* ---------------- Paged deck ---------------- */
+  .deck{
+    position: fixed; inset: 0;
+    will-change: transform;
+    transition: transform 720ms cubic-bezier(.22,1,.36,1);
+  }
+  .panel{
+    height: 100vh; width: 100vw;
+    padding: calc(var(--header-h) + var(--pad-y)) var(--pad-x) var(--pad-y);
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    transition: background var(--t), color var(--t);
+  }
+  /* Palette-driven backgrounds from toggle */
+  body.color-on .panel{
+    background: var(--panel-bg, var(--bg));
+    color: var(--panel-fg, var(--fg));
+    --muted: var(--panel-muted, #6b6b6b);
+  }
+
+  /* Mono foot used across panels (same pattern as .cat .foot) */
+  .foot{
+    position: absolute; left: var(--pad-x); right: var(--pad-x); top: calc(var(--header-h) + var(--pad-y));
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .foot .idx{ font-variant-numeric: tabular-nums; }
+
+  /* ============ Panel 0: Title ============ */
+  .title-panel{
+    justify-content: flex-end;
+    /* title-h = font-size * line-height (0.86). Used to clear the big title
+       so meta-block + topics sit above it instead of overlapping. */
+    --title-h: calc(clamp(100px, 18vw, 300px) * 0.86);
+  }
+  .title-panel .big{
+    font-weight: 500;
+    font-size: clamp(100px, 18vw, 300px);
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    padding: 0 0 40px;
+    text-wrap: balance;
+  }
+  .title-panel .meta-block{
+    position: absolute;
+    left: var(--pad-x);
+    bottom: calc(var(--pad-y) + 40px + var(--title-h) + 32px);
+    display: flex; flex-direction: column; gap: 4px;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 16px; line-height: 20px;
+    max-width: 50ch;
+  }
+  .title-panel .meta-block .lede{
+    font-family: "Inter Tight", sans-serif;
+    font-size: clamp(20px, 1.8vw, 28px);
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+    text-transform: none;
+    max-width: 36ch;
+    margin-bottom: 16px;
+    text-wrap: pretty;
+  }
+  .title-panel .topics{
+    position: absolute;
+    right: var(--pad-x);
+    bottom: calc(var(--pad-y) + 40px + var(--title-h) + 32px);
+    display: flex; flex-direction: row; flex-wrap: wrap;
+    justify-content: flex-end; gap: 10px 28px;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase;
+    text-align: right;
+    opacity: .85;
+    list-style: none;
+    max-width: 50%;
+  }
+
+  /* ============ Panel 1: Hero ============ */
+  .hero-panel{ padding: calc(var(--header-h)) 0 60px; }
+  .hero-panel .foot{ left: var(--pad-x); right: var(--pad-x); top: calc(var(--header-h) + var(--pad-y)); }
+  .hero-panel .hero{
+    flex: 1; position: relative;
+    margin: 60px var(--pad-x) 0;
+    background: rgba(10,10,10,0.06);
+    overflow: hidden;
+    display: grid; place-items: center;
+  }
+  body.color-on .hero-panel .hero{ background: rgba(0,0,0,0.10); }
+  .hero-panel .hero .ghost{
+    font-weight: 500;
+    font-size: clamp(80px, 14vw, 220px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    opacity: .18;
+    text-align: center;
+    padding: 0 8%;
+    text-wrap: balance;
+    user-select: none;
+  }
+  .hero-panel .hero .hero-img{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: clamp(16px, 3vw, 40px);
+    background: transparent;
+  }
+  .hero-panel .hero .cap{
+    position: absolute; left: 16px; bottom: 14px;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ============ Panel 2: Overview / credits ============ */
+  .overview-panel{ justify-content: center; gap: 60px; }
+  .overview-panel .stacks{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(24px, 4vw, 80px);
+    margin-top: 20px;
+  }
+  .overview-panel .stacks h3{
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .overview-panel .stacks ul{ list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .overview-panel .stacks li{
+    font-family: "Inter Tight", sans-serif;
+    font-size: clamp(20px, 2.2vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+  }
+  .overview-panel .lede{
+    font-weight: 500;
+    font-size: clamp(30px, 4.2vw, 64px);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    max-width: 22ch;
+    text-wrap: pretty;
+  }
+
+  /* ============ Panel 3: Body ============ */
+  .body-panel{ justify-content: center; overflow-y: auto; }
+  .body-panel::-webkit-scrollbar{ display: none; width: 0; height: 0; }
+  .body-panel{ scrollbar-width: none; }
+  .body-panel .body-wrap{
+    max-width: 70ch;
+    margin: 0 auto;
+    padding: 20px 0 40px;
+  }
+  .body-panel h2{
+    font-family: "Inter Tight", sans-serif;
+    font-weight: 500;
+    font-size: clamp(36px, 4.5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin-bottom: 32px;
+    text-wrap: balance;
+  }
+  .body-panel p{
+    font-size: clamp(17px, 1.3vw, 20px);
+    line-height: 1.55;
+    margin-bottom: 1.2em;
+    text-wrap: pretty;
+  }
+
+  /* ============ Panel 4: Gallery ============ */
+  .gallery-panel{ padding: calc(var(--header-h)) 0 60px; }
+  .gallery-panel .foot{ top: calc(var(--header-h) + var(--pad-y)); }
+  .gallery-panel .grid{
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin: 60px var(--pad-x) 0;
+    background: var(--line);
+  }
+  .gallery-panel .tile{
+    background: rgba(10,10,10,0.06);
+    display: grid; place-items: end start;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+    position: relative;
+    overflow: hidden;
+  }
+  body.color-on .gallery-panel .tile{ background: rgba(0,0,0,0.10); }
+  .gallery-panel .tile.has-img{
+    background-color: #fff;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .gallery-panel .tile.has-img{ cursor: zoom-in; transition: filter .2s ease; }
+  .gallery-panel .tile.has-img:hover{ filter: brightness(.94); }
+
+  /* Lightbox — full-screen image viewer triggered by clicking a gallery tile */
+  .lightbox{
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(10,10,10,.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 4vw, 64px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .lightbox.open{ opacity: 1; pointer-events: auto; }
+  .lightbox .lb-img{
+    max-width: 100%;
+    max-height: calc(100% - 80px);
+    object-fit: contain;
+    background: #fff;
+  }
+  .lightbox .lb-cap{
+    margin-top: 18px;
+    color: #fff;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    max-width: 60ch;
+  }
+  .lightbox .lb-close{
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    cursor: pointer;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 22px;
+    line-height: 1;
+    transition: background .18s ease, color .18s ease;
+  }
+  .lightbox .lb-close:hover{ background: #fff; color: #0a0a0a; }
+  .gallery-panel .tile .t-cap{
+    padding: 10px 12px;
+    background: rgba(10,10,10,.78);
+    color: #fff;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    line-height: 1.2;
+    max-width: 80%;
+  }
+  .gallery-panel .tile:not(.has-img) .t-cap{
+    background: transparent; color: var(--muted); padding: 12px;
+  }
+
+  /* ============ Panel 5: Project carousel ============ */
+  .next-panel{
+    justify-content: center;
+    align-items: stretch;
+    gap: clamp(32px, 5vw, 72px);
+  }
+  .next-panel .foot{ justify-content: flex-end; overflow: visible; }
+  /* Category dropdown (replaces the plain label) */
+  .cat-menu{ position: relative; }
+  .cat-trigger{
+    background: transparent;
+    border: 1px solid transparent;
+    color: inherit;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: background .18s ease, color .18s ease, border-color .18s ease;
+  }
+  .cat-trigger .caret{
+    display: inline-block;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid currentColor;
+    transition: transform .2s ease;
+  }
+  .cat-menu.open .cat-trigger .caret{ transform: rotate(180deg); }
+  .cat-trigger:hover,
+  .cat-menu.open .cat-trigger{
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
+  body.color-on .cat-trigger:hover,
+  body.color-on .cat-menu.open .cat-trigger{
+    background: var(--panel-fg, var(--fg));
+    color: var(--panel-bg, var(--bg));
+    border-color: var(--panel-fg, var(--fg));
+  }
+  .cat-drop{
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 220px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid currentColor;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+    z-index: 60;
+  }
+  body.color-on .cat-drop{
+    background: var(--panel-bg, var(--bg));
+    color: var(--panel-fg, var(--fg));
+  }
+  .cat-drop[hidden]{ display: none; }
+  .cat-drop li{
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 24px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .cat-drop li .num{ opacity: .55; font-size: 13px; }
+  .cat-drop li:hover,
+  .cat-drop li.current{
+    background: var(--fg);
+    color: var(--bg);
+  }
+  body.color-on .cat-drop li:hover,
+  body.color-on .cat-drop li.current{
+    background: var(--panel-fg, var(--fg));
+    color: var(--panel-bg, var(--bg));
+  }
+  .cat-drop li:hover .num,
+  .cat-drop li.current .num{ opacity: .8; }
+  .next-panel .car-row{
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(24px, 4vw, 72px);
+    width: 100%;
+    max-width: clamp(640px, 68vw, 1040px);
+    margin: 0 auto;
+    padding: 0 clamp(12px, 2vw, 32px);
+  }
+  .next-panel .car-btn{
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    width: clamp(56px, 6vw, 88px);
+    height: clamp(56px, 6vw, 88px);
+    display: grid; place-items: center;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: clamp(22px, 2.4vw, 36px);
+    line-height: 1;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .next-panel .car-btn:hover{ background: var(--fg); color: var(--bg); }
+  body.color-on .next-panel .car-btn:hover{
+    background: var(--panel-fg, var(--fg));
+    color: var(--panel-bg, var(--bg));
+  }
+  .next-panel .car-center{
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .next-panel .car-label{
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .next-panel .car-title{
+    font-weight: 500;
+    font-size: clamp(64px, 11vw, 180px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    transition: opacity .28s ease, transform .28s cubic-bezier(.2,.7,.2,1);
+  }
+  .next-panel .car-center:hover .car-title{ opacity: .65; transform: translateY(-4px); }
+  .next-panel .car-center.flip .car-title,
+  .next-panel .car-center.flip .car-lede{ opacity: 0; transform: translateY(6px); }
+  .next-panel .car-lede{
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--muted);
+    transition: opacity .28s ease, transform .28s cubic-bezier(.2,.7,.2,1);
+  }
+  .next-panel .car-pager{
+    display: flex; gap: 12px;
+    justify-content: center; align-items: center;
+  }
+  .next-panel .car-pager button{
+    background: transparent; border: 0; padding: 6px; cursor: pointer;
+    display: grid; place-items: center;
+    color: inherit;
+  }
+  .next-panel .car-pager .dot{
+    display: block;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor;
+    opacity: .25;
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  .next-panel .car-pager button.on .dot{ opacity: 1; transform: scale(1.5); }
+  .next-panel .car-pager button:hover .dot{ opacity: .7; }
+
+  /* ---------------- Page indicator (right) ---------------- */
+  .pager{
+    position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 40;
+    mix-blend-mode: difference;
+  }
+  .pager button{
+    width: 18px; height: 18px; border: 0; background: transparent; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .pager button span{
+    display:block; width: 6px; height: 6px; border-radius: 50%;
+    background: #fff; opacity: .4; transition: opacity .2s, transform .2s;
+  }
+  .pager button.active span{ opacity: 1; transform: scale(2.8); }
+  .pager button:hover span{ opacity: .9; }
+
+  /* ---------------- Bottom bar ---------------- */
+  .bottombar{
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px var(--pad-x);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    mix-blend-mode: difference; color: #fff;
+    pointer-events: none;
+  }
+  .bottombar .scroll-hint{ display:flex; align-items:center; gap: 10px; }
+  .bottombar .dot{
+    width: 6px; height: 6px; background: currentColor; border-radius: 50%;
+    animation: blip 1.6s ease-in-out infinite;
+  }
+  @keyframes blip { 50% { opacity: .35; } }
+
+  @media (max-width: 720px){
+    header nav{ display: none; }
+    .title-panel .big{ font-size: clamp(60px, 18vw, 140px); }
+    .title-panel .topics{ display: none; }
+    .overview-panel .stacks{ grid-template-columns: 1fr; }
+    .gallery-panel .grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-title"><a href="index.html" id="homeLink">Mandeep Kumar — 2026</a></div>
+  <nav>
+    <a href="index.html" data-cat-go="1" class="nav-trigger" id="projectsTrigger" aria-haspopup="true" aria-controls="projectsMenu">Projects</a>
+    <a href="index.html#about" data-cat-go="7">Journey</a>
+    <a href="index.html#contact" data-cat-go="8">Contact</a>
+  </nav>
+  <div class="right">
+    <label class="toggle" id="toggle">
+      <span>Color:</span>
+      <span class="lbl off">Off</span>
+      <span class="switch" aria-hidden="true"></span>
+      <span class="lbl on">On</span>
+    </label>
+  </div>
+</header>
+
+<div class="deck" id="deck">
+
+  <!-- 0: Title -->
+  <section class="panel title-panel">
+    <div class="foot">
+      <span class="idx" id="footIdx">01 — Digital · Project</span>
+    </div>
+    <div class="meta-block">
+      <p class="lede" id="projLede">A deep dive to understand people.</p>
+      <span id="projAuthors">Mandeep Kumar · Collaborator</span>
+    </div>
+    <ul class="topics" id="projTopics">
+      <li>Body</li><li>Community</li><li>Culture</li><li>Expression</li><li>Feelings</li>
+    </ul>
+    <div class="big" id="projTitle">Skinn</div>
+  </section>
+
+  <!-- 1: Hero -->
+  <section class="panel hero-panel">
+    <div class="foot">
+      <span class="idx">Hero · Cover</span>
+      <span>1695 × 967</span>
+    </div>
+    <div class="hero">
+      <img class="hero-img" id="heroImg" alt="" hidden>
+      <div class="ghost" id="heroGhost">Skinn</div>
+      <div class="cap" id="heroCap">Image placeholder · replace with artwork</div>
+    </div>
+  </section>
+
+  <!-- 2: Overview -->
+  <section class="panel overview-panel">
+    <div class="foot">
+      <span class="idx">Overview · Credits</span>
+      <span>02 / 06</span>
+    </div>
+    <p class="lede" id="overviewLede">An honest and in-depth understanding of human conditions and feelings from different perspectives.</p>
+    <div class="stacks">
+      <div>
+        <h3>Team</h3>
+        <ul id="teamList">
+          <li>Mandeep Kumar</li>
+          <li>Collaborator</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Scope</h3>
+        <ul id="scopeList">
+          <li>Editorial Design</li>
+          <li>Art Direction</li>
+          <li>Typography</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3: Body -->
+  <section class="panel body-panel">
+    <div class="foot">
+      <span class="idx">Body</span>
+      <span>03 / 06</span>
+    </div>
+    <div class="body-wrap">
+      <h2 id="bodyHead">The project in long form.</h2>
+      <p id="bodyP1">This project focuses on skin — our containers as human beings — and investigates it by digging deep into related topics like "Touch", "Difference" and "Change". Showing different aspects of the topic from a literal and also emotional point of view while creating empathy.</p>
+      <p id="bodyP2">Research was grounded in first-person interviews and long-form observation. The visual language draws from tactile materials — grain, weave, porous surfaces — translated into type and grid decisions.</p>
+      <p id="bodyP3">A sincere and intimate magazine that the reader would find a piece of themselves in — feeling understood, connected, and seen. Every page is a conversation between the reader and the body they inhabit.</p>
+    </div>
+  </section>
+
+  <!-- 4: Gallery -->
+  <section class="panel gallery-panel">
+    <div class="foot">
+      <span class="idx">Process · Gallery</span>
+      <span>04 / 06</span>
+    </div>
+    <div class="grid" id="galleryGrid">
+      <div class="tile" data-i="0"><span class="t-cap">Spread 01</span></div>
+      <div class="tile" data-i="1"><span class="t-cap">Spread 02</span></div>
+      <div class="tile" data-i="2"><span class="t-cap">Spread 03</span></div>
+      <div class="tile" data-i="3"><span class="t-cap">Spread 04</span></div>
+    </div>
+  </section>
+
+  <!-- 5: Project carousel -->
+  <section class="panel next-panel" id="nextPanel">
+    <div class="foot">
+      <div class="cat-menu" id="catMenu">
+        <button type="button" class="cat-trigger" id="carCat" aria-haspopup="listbox" aria-expanded="false">
+          <span class="cat-label">→ Digital</span>
+          <span class="caret" aria-hidden="true"></span>
+        </button>
+        <ul class="cat-drop" id="catDrop" role="listbox" hidden></ul>
+      </div>
+    </div>
+    <div class="car-row">
+      <button class="car-btn" id="carPrev" aria-label="Previous project">←</button>
+      <div class="car-center" id="carCenter" role="link" tabindex="0">
+        <div class="car-label">Go to project</div>
+        <div class="car-title" id="carTitle">Ledger</div>
+        <div class="car-lede" id="carLede">Consumer banking app</div>
+      </div>
+      <button class="car-btn" id="carNext" aria-label="Next project">→</button>
+    </div>
+    <div class="car-pager" id="carPager"></div>
+  </section>
+
+</div>
+
+<!-- Projects category dropdown — sibling of <header> to escape difference blend -->
+<ul class="nav-menu" id="projectsMenu" role="menu" hidden>
+  <li><a href="index.html" data-cat-go="1">Digital<span class="num">01</span></a></li>
+  <li><a href="index.html" data-cat-go="2">Identity<span class="num">02</span></a></li>
+  <li><a href="index.html" data-cat-go="3">Print<span class="num">03</span></a></li>
+  <li><a href="index.html" data-cat-go="4">Motion<span class="num">04</span></a></li>
+  <li><a href="index.html" data-cat-go="5">Experiments<span class="num">05</span></a></li>
+  <li><a href="index.html" data-cat-go="6">Operations<span class="num">06</span></a></li>
+</ul>
+
+<!-- Lightbox for gallery tile click-through -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+  <button type="button" class="lb-close" id="lbClose" aria-label="Close">×</button>
+  <img class="lb-img" id="lbImg" alt="">
+  <div class="lb-cap" id="lbCap"></div>
+</div>
+
+<aside class="pager" id="pager" aria-label="Page navigation"></aside>
+
+<div class="bottombar">
+  <span class="scroll-hint"><span class="dot"></span> Scroll / ↓ / Space</span>
+  <span id="counter">01 / 06</span>
+</div>
+
+<script>
+  // Site-title → always land on index.html's intro panel (01)
+  document.getElementById('homeLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.setItem('panel-idx', '0');
+    sessionStorage.removeItem('proj-panel-idx');
+    location.href = 'index.html';
+  });
+
+  // Nav dropdown / category links → set Portfolio panel index then navigate
+  document.querySelectorAll('[data-cat-go]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.setItem('panel-idx', a.dataset.catGo);
+      sessionStorage.removeItem('proj-panel-idx');
+      location.href = 'index.html';
+    });
+  });
+
+  // ---------- Projects nav dropdown (hover-revealed) ----------
+  (() => {
+    const trigger = document.getElementById('projectsTrigger');
+    const menu = document.getElementById('projectsMenu');
+    if (!trigger || !menu) return;
+    let hideTimer;
+    function position(){
+      const r = trigger.getBoundingClientRect();
+      menu.style.top = r.bottom + 4 + 'px';
+      menu.style.left = r.left + 'px';
+    }
+    function show(){
+      clearTimeout(hideTimer);
+      position();
+      menu.hidden = false;
+      trigger.classList.add('menu-open');
+    }
+    function hide(){
+      hideTimer = setTimeout(() => {
+        menu.hidden = true;
+        trigger.classList.remove('menu-open');
+      }, 140);
+    }
+    trigger.addEventListener('mouseenter', show);
+    trigger.addEventListener('mouseleave', hide);
+    trigger.addEventListener('focus', show);
+    trigger.addEventListener('blur', hide);
+    menu.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+    menu.addEventListener('mouseleave', hide);
+    window.addEventListener('resize', () => { if (!menu.hidden) position(); });
+  })();
+
+  // ---------- Per-project rich content. Projects not listed here fall back to
+  // their catData entry (title + short lede only). ----------
+  const projectDetails = {
+    Brandix: {
+      cat: 'Operations',
+      catIx: '06',
+      topics: ['Finishing','Layout','Storage','Throughput','Lean'],
+      authors: 'Brandix Apparel India · Unit-III · Visakhapatnam · Jun–Jul 2025',
+      hero: {
+        img: 'assets/brandix/hero.svg',
+        cap: 'Brandix Apparel India · Unit-III · Visakhapatnam · Floor plan',
+      },
+      overview: {
+        lede: 'Apparel production internship on the finishing floor of Brandix Apparel India — diagnosing and eliminating operational inefficiencies to boost throughput and cut waste.',
+        team: ['Mandeep Kumar · Production Intern','Brandix Unit-III · Visakhapatnam','NIFT Delhi · Supervision'],
+        scope: ['Finishing-floor redesign','Modular storage system','Workflow re-routing','Workforce re-allocation'],
+      },
+      body: {
+        head: 'Six weeks on a 6,500 sq.ft finishing floor — rewriting the flow, the storage, and the headcount.',
+        p1: 'Brandix Apparel India Pvt. Ltd. is Sri Lanka\'s largest apparel exporter and one of Asia\'s top ten garment manufacturers. Unit-III in Visakhapatnam stitches innerwear and loungewear for Uniqlo under a Japanese READ & REACT model, where lead times collapse from 60 days to 20 and nothing forgives a bottleneck. The brief was narrow and sharp: diagnose and eliminate operational inefficiencies across the finishing floor to boost throughput and reduce waste.',
+        p2: 'The finishing area covered 6,500 sq.ft and 200-plus workers, with only 32 packing workstations and ad-hoc floor storage that masked a chronic traceability problem — roughly 4,500 pieces vanishing into the floor every week. The redesign attacked three levers in parallel: the physical layout (eliminate non-value-adding motion, scale to 55 workstations), the storage system (replace floor piles with a modular rack managing 20+ styles, colours, sizes, and bulk patterns), and the workforce (consolidate handling roles so the same floor runs leaner).',
+        p3: 'The rerouted floor traffic and new modular storage cut material-handling time by 30% and lifted daily packing capacity by 38%, scaling output from 65,000 to 90,000 pieces a day. Material handlers dropped from 100 to 75 — a 25% reduction without losing throughput — and the traceability gap closed almost entirely: lost pieces fell from 4,500 to 300 per week, a 93% reduction. The finishing floor that used to eat its own count now tells the truth, shift after shift.',
+      },
+      gallery: [
+        { img: 'assets/brandix/finishing-before.svg', cap: 'Finishing layout · Before (32 stations, ad-hoc storage)' },
+        { img: 'assets/brandix/finishing-after.svg',  cap: 'Finishing layout · After (55 stations, structured zones)' },
+        { img: 'assets/brandix/modular-rack.svg',     cap: 'Modular rack system · All products · colours · styles' },
+        { img: 'assets/brandix/pull-system.svg',      cap: 'Pull-system solution · DO-per-country, two-shift flow' },
+      ],
+    },
+  };
+
+  function applyProjectDetails(title){
+    const d = projectDetails[title];
+    if (!d) return;
+
+    // Topics (comma-separated pills at the top-right of the title panel)
+    const topicsEl = document.getElementById('projTopics');
+    if (d.topics && topicsEl) {
+      topicsEl.innerHTML = d.topics.map(t => `<li>${t}</li>`).join('');
+    }
+
+    // Authors / credits line under the lede in the title panel
+    const authorsEl = document.getElementById('projAuthors');
+    if (d.authors && authorsEl) authorsEl.textContent = d.authors;
+
+    // Hero image — hide the ghost text, show the real artwork
+    if (d.hero) {
+      const heroImg = document.getElementById('heroImg');
+      const heroGhost = document.getElementById('heroGhost');
+      const heroCap = document.getElementById('heroCap');
+      if (d.hero.img && heroImg) {
+        heroImg.src = d.hero.img;
+        heroImg.alt = title + ' — cover';
+        heroImg.hidden = false;
+        if (heroGhost) heroGhost.hidden = true;
+      }
+      if (d.hero.cap && heroCap) heroCap.textContent = d.hero.cap;
+    }
+
+    // Overview panel — replace lede and rebuild the team + scope lists
+    if (d.overview) {
+      const o = d.overview;
+      const lede = document.getElementById('overviewLede');
+      if (o.lede && lede) lede.textContent = o.lede;
+      if (o.team) document.getElementById('teamList').innerHTML = o.team.map(n => `<li>${n}</li>`).join('');
+      if (o.scope) document.getElementById('scopeList').innerHTML = o.scope.map(n => `<li>${n}</li>`).join('');
+    }
+
+    // Body panel — long-form narrative
+    if (d.body) {
+      const b = d.body;
+      if (b.head) document.getElementById('bodyHead').textContent = b.head;
+      if (b.p1) document.getElementById('bodyP1').textContent = b.p1;
+      if (b.p2) document.getElementById('bodyP2').textContent = b.p2;
+      if (b.p3) document.getElementById('bodyP3').textContent = b.p3;
+    }
+
+    // Gallery — paint each tile with a real image + caption, and wire click → lightbox
+    if (d.gallery && d.gallery.length) {
+      const grid = document.getElementById('galleryGrid');
+      const tiles = grid.querySelectorAll('.tile');
+      tiles.forEach((tile, i) => {
+        const item = d.gallery[i];
+        if (!item) return;
+        tile.classList.add('has-img');
+        tile.style.backgroundImage = `url(${item.img})`;
+        tile.dataset.src = item.img;
+        tile.dataset.cap = item.cap || '';
+        tile.setAttribute('role', 'button');
+        tile.setAttribute('tabindex', '0');
+        tile.addEventListener('click', () => openLightbox(item.img, item.cap || ''));
+        tile.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(item.img, item.cap || ''); }
+        });
+        const cap = tile.querySelector('.t-cap');
+        if (cap) cap.textContent = item.cap || '';
+      });
+    }
+  }
+
+  // ---------- Lightbox (full-screen tile viewer) ----------
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCap = document.getElementById('lbCap');
+  function openLightbox(src, caption){
+    lbImg.src = src;
+    lbImg.alt = caption || '';
+    lbCap.textContent = caption || '';
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    // Clear src so a re-open re-triggers a load (and frees memory)
+    setTimeout(() => { if (!lightbox.classList.contains('open')) lbImg.src = ''; }, 250);
+  }
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+  });
+
+  // ---------- Shared category data (mirrors index.html) ----------
+  const catData = {
+    Digital:     { idx: '01', projects: [['Ledger','Consumer banking app'], ['Pulse','Internal ops dashboard'], ['Harbor','Marketplace redesign']] },
+    Identity:    { idx: '02', projects: [['Slowmail','Brand system'], ['Halcyon','Label identity'], ['Kiln','Coffee packaging']] },
+    Print:       { idx: '03', projects: [['Iss03','Independent magazine'], ['Parallel','Photo book']] },
+    Motion:      { idx: '04', projects: [['Titles','Short film sequence'], ['Loops','Generative studies'], ['Reveal','Halcyon brand']] },
+    Experiments: { idx: '05', projects: [['Weather','As typography'], ['Paper','Calculator'], ['Tiny','Text editor'], ['Grid','Generator'], ['Sound','Reactive posters']] },
+    Operations:  { idx: '06', projects: [['Brandix','Apparel production internship'], ['Signal','Metrics framework']] },
+  };
+
+  // ---------- URL params → current project ----------
+  const params = new URLSearchParams(location.search);
+  const cat = catData[params.get('cat')] ? params.get('cat') : 'Digital';
+  const catInfo = catData[cat];
+  const projects = catInfo.projects;
+  const catIx = catInfo.idx;
+
+  const urlTitle = params.get('title');
+  let currentIdx = projects.findIndex(p => p[0] === urlTitle);
+  if (currentIdx < 0) currentIdx = 0;
+  const current = projects[currentIdx];
+  const title = current[0];
+  const lede = params.get('lede') || current[1];
+
+  document.title = title + ' — Mandeep Kumar';
+  document.getElementById('projTitle').textContent = title;
+  document.getElementById('heroGhost').textContent = title;
+  document.getElementById('footIdx').textContent = `${catIx} — ${cat} · Project`;
+  document.getElementById('projLede').textContent = lede;
+
+  // Override defaults with per-project rich content when available
+  applyProjectDetails(title);
+
+  // ---------- Project carousel (panel 6) ----------
+  const catMenu = document.getElementById('catMenu');
+  const carCat = document.getElementById('carCat');
+  const catDrop = document.getElementById('catDrop');
+  const carCenter = document.getElementById('carCenter');
+  const carTitle = document.getElementById('carTitle');
+  const carLede = document.getElementById('carLede');
+  const carPager = document.getElementById('carPager');
+  carCat.querySelector('.cat-label').textContent = '→ ' + cat;
+
+  // Category dropdown — jump to any category's first project
+  Object.entries(catData).forEach(([name, info]) => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option');
+    li.innerHTML = `<span>${name}</span><span class="num">${info.idx}</span>`;
+    if (name === cat) li.classList.add('current');
+    li.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (name === cat){ closeMenu(); return; }
+      const firstProj = info.projects[0][0];
+      const qp = new URLSearchParams({ cat: name, title: firstProj });
+      sessionStorage.removeItem('proj-panel-idx');
+      location.href = `project.html?${qp.toString()}`;
+    });
+    catDrop.appendChild(li);
+  });
+
+  function openMenu(){
+    catDrop.hidden = false;
+    catMenu.classList.add('open');
+    carCat.setAttribute('aria-expanded', 'true');
+  }
+  function closeMenu(){
+    catDrop.hidden = true;
+    catMenu.classList.remove('open');
+    carCat.setAttribute('aria-expanded', 'false');
+  }
+  carCat.addEventListener('click', (e) => {
+    e.stopPropagation();
+    catMenu.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  document.addEventListener('click', (e) => {
+    if (catMenu.classList.contains('open') && !catMenu.contains(e.target)) closeMenu();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && catMenu.classList.contains('open')){ e.preventDefault(); closeMenu(); }
+  });
+
+  // Start the carousel on the project AFTER the one currently being viewed
+  let carIdx = (currentIdx + 1) % projects.length;
+
+  function renderCarousel(animate){
+    const p = projects[carIdx];
+    const paint = () => {
+      carTitle.textContent = p[0];
+      carLede.textContent = p[1];
+      [...carPager.children].forEach((b, i) => b.classList.toggle('on', i === carIdx));
+    };
+    if (animate){
+      carCenter.classList.add('flip');
+      setTimeout(() => {
+        paint();
+        carCenter.classList.remove('flip');
+      }, 180);
+    } else {
+      paint();
+    }
+  }
+
+  // Build pager dots — one per project in the category
+  projects.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.innerHTML = '<span class="dot"></span>';
+    b.setAttribute('aria-label', 'Show ' + p[0]);
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (i === carIdx) return;
+      carIdx = i;
+      renderCarousel(true);
+    });
+    carPager.appendChild(b);
+  });
+
+  renderCarousel(false);
+
+  function goToProject(newTitle){
+    const qp = new URLSearchParams({ cat, title: newTitle });
+    sessionStorage.removeItem('proj-panel-idx');
+    location.href = `project.html?${qp.toString()}`;
+  }
+
+  document.getElementById('carPrev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    carIdx = (carIdx - 1 + projects.length) % projects.length;
+    renderCarousel(true);
+  });
+  document.getElementById('carNext').addEventListener('click', (e) => {
+    e.stopPropagation();
+    carIdx = (carIdx + 1) % projects.length;
+    renderCarousel(true);
+  });
+  carCenter.addEventListener('click', () => goToProject(projects[carIdx][0]));
+  carCenter.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goToProject(projects[carIdx][0]); }
+  });
+
+  // ---------- Paged deck ----------
+  const deck = document.getElementById('deck');
+  const panels = Array.from(document.querySelectorAll('.panel'));
+  const pager = document.getElementById('pager');
+  const counter = document.getElementById('counter');
+  const toggle = document.getElementById('toggle');
+
+  let idx = 0;
+  const total = panels.length;
+
+  panels.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.innerHTML = '<span></span>';
+    b.setAttribute('aria-label', 'Go to panel ' + (i+1));
+    b.addEventListener('click', () => go(i));
+    pager.appendChild(b);
+  });
+  const pagerBtns = Array.from(pager.children);
+
+  function render(){
+    deck.style.transform = `translateY(${-idx * 100}vh)`;
+    pagerBtns.forEach((b,i)=> b.classList.toggle('active', i===idx));
+    counter.textContent = String(idx+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    sessionStorage.setItem('proj-panel-idx', idx);
+  }
+  function go(n){ idx = Math.max(0, Math.min(total-1, n)); render(); }
+
+  const saved = parseInt(sessionStorage.getItem('proj-panel-idx') || '0', 10);
+  if (!isNaN(saved)) idx = Math.max(0, Math.min(total-1, saved));
+  render();
+
+  // Wheel
+  let locked = false;
+  window.addEventListener('wheel', (e) => {
+    // allow inner scroll on .body-panel when content overflows
+    const onBody = e.target.closest('.body-panel');
+    if (onBody){
+      const el = onBody;
+      const atTop = el.scrollTop <= 0;
+      const atBot = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+      if ((e.deltaY > 0 && !atBot) || (e.deltaY < 0 && !atTop)) return;
+    }
+    if (locked) return;
+    if (Math.abs(e.deltaY) < 12) return;
+    locked = true;
+    go(idx + (e.deltaY > 0 ? 1 : -1));
+    setTimeout(()=> locked = false, 720);
+  }, { passive: true });
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); go(idx+1); }
+    if (['ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); go(idx-1); }
+    if (e.key === 'Home'){ go(0); }
+    if (e.key === 'End'){ go(total-1); }
+    if (e.key === 'Escape'){ history.length > 1 ? history.back() : location.href = 'index.html'; }
+  });
+
+  // Touch
+  let touchY = null;
+  window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, {passive:true});
+  window.addEventListener('touchend', (e) => {
+    if (touchY == null) return;
+    const dy = touchY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 40) go(idx + (dy > 0 ? 1 : -1));
+    touchY = null;
+  });
+
+  // ---------- Color toggle (matches Portfolio) ----------
+  const palettes = [
+    [['#efe9d9','#0a0a0a'], ['#ff2d1f','#ffffff'], ['#1f3bff','#ffffff'], ['#efe9d9','#0a0a0a'], ['#c8ea4a','#0a0a0a'], ['#ff9cc8','#0a0a0a'], ['#0a0a0a','#ffffff']],
+    [['#fff25a','#0a0a0a'], ['#0a0a0a','#fff25a'], ['#ff5a1f','#ffffff'], ['#2b2bff','#ffffff'], ['#eaffc8','#0a0a0a'], ['#ff2d78','#ffffff'], ['#ffffff','#0a0a0a']],
+    [['#f3ede3','#0a0a0a'], ['#e8d8ff','#0a0a0a'], ['#cfe6ff','#0a0a0a'], ['#ffe4c7','#0a0a0a'], ['#d6f0d3','#0a0a0a'], ['#ffd6e1','#0a0a0a'], ['#e6e2d8','#0a0a0a']],
+    [['#1f3bff','#ffffff'], ['#ff2d1f','#ffffff'], ['#00a859','#ffffff'], ['#ffcc00','#0a0a0a'], ['#ff5fa2','#ffffff'], ['#7a00ff','#ffffff'], ['#0a0a0a','#ffffff']],
+    [['#ffffff','#0a0a0a'], ['#0a0a0a','#ffffff'], ['#ffffff','#0a0a0a'], ['#0a0a0a','#ffffff'], ['#ffffff','#0a0a0a'], ['#0a0a0a','#ffffff'], ['#ffffff','#0a0a0a']],
+  ];
+  let paletteIdx = parseInt(localStorage.getItem('palette-idx') || '-1', 10);
+
+  function applyPalette(){
+    if (paletteIdx < 0) return;
+    const pal = palettes[paletteIdx % palettes.length];
+    panels.forEach((p, i) => {
+      const [bg, fg] = pal[i % pal.length];
+      p.style.setProperty('--panel-bg', bg);
+      p.style.setProperty('--panel-fg', fg);
+      p.style.setProperty('--panel-muted', fg === '#ffffff' ? 'rgba(255,255,255,.7)' : 'rgba(10,10,10,.55)');
+    });
+  }
+
+  if (localStorage.getItem('color-mode') === 'on' && paletteIdx >= 0) {
+    document.body.classList.add('color-on');
+    applyPalette();
+  }
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Binary ON/OFF. Each OFF → ON transition advances to the next palette.
+    if (document.body.classList.contains('color-on')) {
+      document.body.classList.remove('color-on');
+      localStorage.setItem('color-mode', 'off');
+    } else {
+      paletteIdx = (Math.max(paletteIdx, -1) + 1) % palettes.length;
+      document.body.classList.add('color-on');
+      applyPalette();
+      localStorage.setItem('palette-idx', paletteIdx);
+      localStorage.setItem('color-mode', 'on');
+    }
+  });
+
+  toggle.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    document.body.classList.remove('color-on');
+    paletteIdx = -1;
+    localStorage.setItem('color-mode', 'off');
+    localStorage.setItem('palette-idx', '-1');
+  });
+</script>
+
+</body>
+</html>
