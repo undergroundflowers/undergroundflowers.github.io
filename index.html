@@ -441,6 +441,14 @@
     white-space: nowrap;
   }
 
+  /* Timeline hidden behind blur until ready to publish */
+  .journey .j-scroll,
+  .journey .j-zoom{
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Contact panel */
   .contact{
     justify-content: center;
