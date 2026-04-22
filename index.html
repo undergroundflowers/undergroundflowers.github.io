@@ -559,15 +559,14 @@
   .overlay .ov-titles .muted:hover{ color: rgba(10,10,10,.75); }
   .overlay .ov-grid{
     flex: 1 1 auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--tile-min, 140px), 1fr));
     align-content: flex-start;
     gap: 0;
     padding: 50px;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
-    --cols: 14;
   }
   .tile{
     aspect-ratio: 1 / 1;
@@ -579,9 +578,7 @@
     cursor: pointer;
     display: block;
     container-type: inline-size;
-    width: calc(100% / var(--cols, 4));
-    flex: 0 0 calc(100% / var(--cols, 4));
-    transition: transform .28s cubic-bezier(.2,.7,.2,1), width .35s cubic-bezier(.2,.7,.2,1), flex-basis .35s cubic-bezier(.2,.7,.2,1);
+    transition: transform .28s cubic-bezier(.2,.7,.2,1);
   }
   .tile:hover{ z-index: 5; transform: scale(1.85); box-shadow: 0 24px 60px -12px rgba(0,0,0,.45), 0 8px 20px -6px rgba(0,0,0,.35); }
   .tile:hover .t-hover{ padding: 8cqi; }
@@ -685,12 +682,6 @@
     font-family: "Inter Tight", sans-serif;
     font-size: 14px; text-transform: none; letter-spacing: -0.005em;
     color: #0a0a0a;
-  }
-  @media (max-width: 960px){
-    .overlay .ov-grid{ --cols: 3; }
-  }
-  @media (max-width: 560px){
-    .overlay .ov-grid{ --cols: 2; }
   }
 </style>
 </head>
@@ -1170,13 +1161,15 @@
   });
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
 
-  // Tile size slider — right side = larger images (fewer columns).
-  // Slider value 6..24 is inverted: max columns = 30 - value.
+  // Tile size slider — right side = larger tiles (bigger min width).
+  // Slider value 16..48 maps linearly to --tile-min 120..480px. The grid
+  // uses auto-fill, so column count adjusts with window width automatically
+  // and resizing never causes a discontinuous jump.
   const ovRange = document.getElementById('ovRange');
   ovRange.addEventListener('input', () => {
     const v = parseFloat(ovRange.value);
-    const cols = Math.max(1, 30 - v); // clamp to ≥ 1 col; formula allows wider slider travel
-    document.getElementById('ovStage').style.setProperty('--cols', cols);
+    const tileMin = 120 + (v - 16) * ((480 - 120) / (48 - 16));
+    document.getElementById('ovStage').style.setProperty('--tile-min', tileMin + 'px');
   });
 
   document.querySelectorAll('[data-go-next]').forEach((el, i) => {
@@ -1410,3 +1403,4 @@
 
 </body>
 </html>
+
